@@ -656,7 +656,7 @@ public class CurrencyServiceConfiguration {
 * We can also override the default configuration in another profile. For example, in the `application-dev.properties` file, we can override the default configuration.  
   
 ```text  
-currency-service.url=http://dev.in28minutes.com  
+currency-service.url=http://dev.example.com  
 currency-service.username=devusername  
 currency-service.key=devkey  
 ```  
@@ -727,3 +727,216 @@ management.endpoints.web.exposure.include=beans,health,info
 
 ---
 
+# Spring JDBC, H2 Database, Hibernate, JPA Notes
+
+* H2 Database: In-memory database.
+* Connection to H2 Database: `conn0: url=jdbc:h2:mem:bdfa2bb8-4131-4dce-96c4-550927009ec5 user=SA`
+* In `application.properties, set `spring.h2.console.enabled=true`
+* To access console, go to `http://localhost:8080/h2-console/`
+* Copy and paste `jdbc:h2:mem:f30911dd-9715-4a83-9d4a-880d582be6a7` into JDBC URL. This is a dynamic URL which changes every restart. We can configure static URL.
+* To configure static URL, add `spring.datasource.url=jdbc:h2:mem:testdb` in `application.properties`. This will create a database called `testdb` in memory.
+
+If we want to use JDBC, JPA, Spring Data JPA, Hibernate etc. To do that, we need to create tables in the H2 database.
+
+We need to create a file called `schema.sql` in `src/main/resources` folder. This file will contain the SQL statements to create the tables.
+
+```sql
+CREATE TABLE course
+(
+    id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
+);
+```
+
+## JDBC (Java Database Connectivity)
+* JDBC is a Java API to connect to a database.
+* Write a lot of SQL queries.
+* More Java code.
+
+## Spring JDBC
+* Spring JDBC is a framework that provides a simple, lightweight, and fast way to access the database.
+* Write a lot of SQL queries.
+* Lesser Java code.
+
+We will execute the code below using Spring JDBC.
+
+```sql
+INSERT INTO course (id, name, author)
+VALUES (1, 'Learn AWS', 'Onur');
+
+SELECT * FROM course;
+
+DELETE FROM course WHERE id = 1;
+```
+
+```java
+@Repository // Class talks to a database.
+public class CourseJdbcRepository {
+    // To run queries using Spring JDBC, we need to use JdbcTemplate.
+
+    @Autowired // Spring will inject the JdbcTemplate object.
+    private JdbcTemplate springJdbcTemplate;
+    private static String INSERT_QUERY =
+            """
+            INSERT INTO course (id, name, author)
+            VALUES (?, ?, ?);
+            """;
+
+    private static String DELETE_QUERY =
+            """
+            DELETE FROM course
+            WHERE id = ?;
+            """;
+
+    private static String SELECT_QUERY =
+            """
+            SELECT * FROM course
+            WHERE id = ?;
+            """;
+
+    public void insert(Course course) {
+        springJdbcTemplate.update(INSERT_QUERY, course.getId(), course.getName(), course.getAuthor()); // Insert, Update, Delete
+    }
+
+    public void deleteById(long id) {
+        springJdbcTemplate.update(DELETE_QUERY, id);
+    }
+
+    public Course findById(long id) {
+        // Single Row
+        // ResultSet -> Bean => Row Mapper
+        return springJdbcTemplate.queryForObject(SELECT_QUERY, new BeanPropertyRowMapper<>(Course.class), id);
+
+        // When we execute SELECT_QUERY, we need to map it because SELECT_QUERY returns multiple rows. (Kind of like a table) -> RowMapper
+
+        // Take the ResultSet and map it to the Course bean. -> RowMapper (They map each row in the ResultSet to a bean.)
+
+        // If we get null values, we need to add Setters to the Course class.
+    }
+}
+
+```
+
+## JPA (Java Persistence API)
+* JPA is a Java API to connect to a database.
+* Map Entities to Tables.
+* Make use of EntityManager.
+
+```java
+@Repository // Class talks to a database.
+@Transactional // We want to make use of JPA, so we need to use @Transactional.
+public class CourseJpaRepository {
+    // If we want to make use JPA talk to the database, we need to use EntityManager.
+
+    // @Autowired // Spring will inject the EntityManager object.
+    @PersistenceContext // PersistenceContext is a better way to inject the EntityManager object.
+    private EntityManager entityManager;
+
+    public void insert(Course course) {
+        entityManager.merge(course); // Insert a row.
+    }
+
+    public Course findById(long id) {
+        // We want to find Course, so we pass Course.class as the first parameter.
+        return entityManager.find(Course.class, id); // Find a row.
+    }
+
+    public void deleteById(long id) {
+        Course course = entityManager.find(Course.class, id);
+        entityManager.remove(course); // Delete a row.
+    }
+}
+
+```
+
+## Spring Data JPA
+* Spring Data JPA is a framework that provides a simple, lightweight, and fast way to access the database.
+* It makes JPA easy to use. It configures EntityManager.
+
+```java
+// This is a Spring Data JPA Repository
+// We need to create an interface and extend JpaRepository.
+// We need to pass the entity class (Course) and the primary key type.
+public interface CourseSpringDataJpaRepository extends JpaRepository<Course, Long> {
+    // We can add custom methods to this interface.
+    // Spring Data JPA will implement these methods.
+    // Spring Data JPA will create a proxy object for this interface.
+
+    // Search by author.
+    // Follow naming conventions. We are searching by author, so we need to name the method findByAuthor.
+    List<Course> findByAuthor(String author);
+    List<Course> findByName(String name);
+}
+
+```
+
+## Hibernate vs JPA
+* JPA is a specification. It is an API. (How to define entities, How to map attributes, Who manage the entities)
+* Hibernate is an implementation of JPA.
+* Using Hibernate will lock us to Hibernate. We cannot use other implementations of JPA. (Toplink, EclipseLink, OpenJPA)
+
+## Executing Queries using CommandLineRunner
+
+```java
+@Component // This class is a Spring Bean.
+public class CourseCommandLineRunner implements CommandLineRunner {
+    // We want to execute this query at the start of the application. To do that, we need to create a CommandLineRunner.
+    // We need to implement the run method of CommandLineRunner.
+    // We need to create a Spring Bean of this class. To do that, we need to add @Component annotation.
+    // We need to create a CourseJdbcRepository object.
+
+    // @Autowired
+    // private CourseJpaRepository repository;
+
+    @Autowired // Spring will inject the CourseSpringDataJpaRepository object.
+    private CourseSpringDataJpaRepository repository;
+
+    // Using Spring Data JPA, EntityManager is handled by Spring Data JPA.
+
+    @Override
+    public void run(String... args) throws Exception {
+        repository.save(new Course(1, "Learn AWS", "Onur")); // Insert or Update
+        repository.save(new Course(2, "Learn Azure", "Onur"));
+        repository.save(new Course(3, "Learn DevOps", "Onur"));
+        repository.save(new Course(4, "Learn Docker", "Onur"));
+
+        repository.deleteById(1l);
+
+        System.out.println(repository.findById(2l));
+        System.out.println(repository.findById(3l));
+
+        repository.findAll().forEach(System.out::println);
+        System.out.println(repository.count());
+
+        System.out.println(repository.findByAuthor("Onur"));
+        System.out.println(repository.findByName("Learn Docker Now"));
+    }
+}
+
+/*
+@Component // This class is a Spring Bean.
+public class CourseJdbcCommandLineRunner implements CommandLineRunner {
+    // We want to execute this query at the start of the application. To do that, we need to create a CommandLineRunner.
+    // We need to implement the run method of CommandLineRunner.
+    // We need to create a Spring Bean of this class. To do that, we need to add @Component annotation.
+    // We need to create a CourseJdbcRepository object.
+
+    @Autowired // Spring will inject the CourseJdbcRepository object.
+    private CourseJdbcRepository repository;
+
+    @Override
+    public void run(String... args) throws Exception {
+        repository.insert(new Course(1, "Learn AWS", "Onur"));
+        repository.insert(new Course(2, "Learn Azure", "Onur"));
+        repository.insert(new Course(3, "Learn DevOps", "Onur"));
+
+        repository.deleteById(1);
+
+        System.out.println(repository.findById(2));
+        System.out.println(repository.findById(3));
+    }
+}
+ */
+```
