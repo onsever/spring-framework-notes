@@ -731,7 +731,7 @@ management.endpoints.web.exposure.include=beans,health,info
 
 * H2 Database: In-memory database.
 * Connection to H2 Database: `conn0: url=jdbc:h2:mem:bdfa2bb8-4131-4dce-96c4-550927009ec5 user=SA`
-* In `application.properties, set `spring.h2.console.enabled=true`
+* In `application.properties`, set `spring.h2.console.enabled=true`
 * To access console, go to `http://localhost:8080/h2-console/`
 * Copy and paste `jdbc:h2:mem:f30911dd-9715-4a83-9d4a-880d582be6a7` into JDBC URL. This is a dynamic URL which changes every restart. We can configure static URL.
 * To configure static URL, add `spring.datasource.url=jdbc:h2:mem:testdb` in `application.properties`. This will create a database called `testdb` in memory.
