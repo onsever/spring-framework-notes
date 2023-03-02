@@ -730,6 +730,8 @@ management.endpoints.web.exposure.include=beans,health,info
 * Logging and Error Handling  
 * Profiles and Configuration Properties
 
+![diagram](https://github.com/onsever/spring-framework-notes/blob/main/Spring%20Framework%20-%20Spring%20Boot.png)
+
 ---
 
 # Spring JDBC, H2 Database, Hibernate, JPA Notes
