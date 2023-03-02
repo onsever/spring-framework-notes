@@ -718,6 +718,9 @@ If we include lots of endpoints, it will consume *more CPU and memory*. So, we c
 ```text  
 management.endpoints.web.exposure.include=beans,health,info  
 ```  
+
+### Three Layer Architecture
+![diagram](https://github.com/onsever/spring-framework-notes/blob/main/Three%20Layer%20Architecture.png)
   
 ### Spring Boot vs Spring MVC vs Spring  
 * **Spring Framework:** Dependency Injection and other Spring framework features.  
