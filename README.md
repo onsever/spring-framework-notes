@@ -53,6 +53,9 @@ public class GameRunner {
   }  
 }
 ```
+
+## Diagram Example
+![diagram](https://github.com/onsever/spring-framework-notes/blob/main/Spring%20Framework%20-%20Coupling.png)
   
 ## Spring Container  
   
@@ -74,7 +77,10 @@ Spring provides two types of IoC containers:
 * **BeanFactory Container:** Basic IoC container provided by Spring. It is the root interface for accessing a Spring BeanFactory. It is the simplest container provided by Spring.  
 * **ApplicationContext Container:** It is the advanced container provided by Spring. It is built on top of the BeanFactory container. It adds more enterprise-specific functionality like the ability to resolve textual messages from a properties file and the ability to publish application events to interested event listeners.  
   
-Most of the Spring applications use ApplicationContext container. It is recommended to use ApplicationContext container over BeanFactory container. (Web applications, web services, REST API and microservices)  
+Most of the Spring applications use ApplicationContext container. It is recommended to use ApplicationContext container over BeanFactory container. (Web applications, web services, REST API and microservices)
+
+### Diagram Example
+![diagram](https://github.com/onsever/spring-framework-notes/blob/main/Spring%20Framework%20-%20IoC.png)
   
 ### Difference between Java Bean, POJO and Spring Bean  
   
