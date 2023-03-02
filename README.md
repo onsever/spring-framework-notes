@@ -942,4 +942,4 @@ public class CourseJdbcCommandLineRunner implements CommandLineRunner {
 ```
 
 # How Dispatcher Servlet Works Behind the Scenes
-![diagram](https://github.com/onsever/spring-framework-notes/blob/main/Dispatcher%20Servlet%20Flow.jpg)
+![diagram](https://github.com/onsever/spring-framework-notes/blob/main/Dispatcher%20Servlet.png)
