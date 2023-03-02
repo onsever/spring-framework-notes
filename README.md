@@ -54,7 +54,6 @@ public class GameRunner {
 }
 ```
 
-## Diagram Example
 ![diagram](https://github.com/onsever/spring-framework-notes/blob/main/Spring%20Framework%20-%20Coupling.png)
   
 ## Spring Container  
